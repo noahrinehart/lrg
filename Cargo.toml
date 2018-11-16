@@ -13,5 +13,7 @@ name = "lrg"
 path = "src/bin/main.rs"
 
 [dependencies]
-walkdir = "2.2.7"
-humansize = "1.1.0"
+walkdir = "2.2"
+humansize = "1.1"
+log = "0.4"
+env_logger = "0.6"

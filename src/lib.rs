@@ -1,8 +1,10 @@
 
 use std::cmp::Ordering;
-use std::path::{Path};
+use std::path::Path;
+use std::io::ErrorKind;
 
 use walkdir::{DirEntry, WalkDir};
+use log::{warn};
 
 pub enum SortBy {
     Ascending,
@@ -31,8 +33,10 @@ pub struct Lrg {
     entries: Vec<DirEntry>,
 }
 
+// TODO include dirs
 // TODO error handling logs
-// TODO don't recurse Lrg::new(path, OPTIONS).sort_by().get_entries()
+// TODO tests
+// TODO test calling on a file
 
 impl Lrg {
     pub fn new(path: &Path, options: &Options) -> Self {
@@ -45,10 +49,16 @@ impl Lrg {
             .follow_links(options.follow_links) 
         {
             match entry {
-                Ok(entry) => if entry.file_type().is_file() { 
-                    entries.push(entry.to_owned())
+                Ok(entry) => {
+                    if entry.file_type().is_file() { 
+                        entries.push(entry.to_owned());
+                    }
                 },
-                Err(error) => println!("Error viewing file"),
+                Err(err) => {
+                    let path = err.path().unwrap_or(Path::new("")).display();
+                    let error_message = get_walkdir_error_str(&err);
+                    println!("lrg: error opening '{}': {}", path, error_message);
+                },
             }
         }
 
@@ -88,7 +98,10 @@ impl Lrg {
     fn get_size(entry: &DirEntry) -> u64 {
         match entry.metadata() {
             Ok(meta) => meta.len(),
-            Err(err) => 0,
+            Err(err) => {
+                warn!("Couldn't get metadata for {}: {:?}", entry.path().display(), err);
+                0
+            },
         }
     }
 
@@ -97,6 +110,34 @@ impl Lrg {
     }
 }
 
-// TODO tests
-// TODO test calling on a file
+pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
+    match err.io_error() {
+        Some(ioerr) => {
+            // Because ErrorKind.as_str() is private
+            match ioerr.kind() {
+                ErrorKind::NotFound => "Entity not found".to_owned(),
+                ErrorKind::PermissionDenied => "Permission denied".to_owned(),
+                ErrorKind::ConnectionRefused => "Connection refused".to_owned(),
+                ErrorKind::ConnectionReset => "Connection reset".to_owned(),
+                ErrorKind::ConnectionAborted => "Connection aborted".to_owned(),
+                ErrorKind::NotConnected => "Not connected".to_owned(),
+                ErrorKind::AddrInUse => "Address in use".to_owned(),
+                ErrorKind::AddrNotAvailable => "Address not available".to_owned(),
+                ErrorKind::BrokenPipe => "Broken pipe".to_owned(),
+                ErrorKind::AlreadyExists => "Entity already exists".to_owned(),
+                ErrorKind::WouldBlock => "Operation would block".to_owned(),
+                ErrorKind::InvalidInput => "Invalid input parameter".to_owned(),
+                ErrorKind::InvalidData => "Invalid data".to_owned(),
+                ErrorKind::TimedOut => "Timed out".to_owned(),
+                ErrorKind::WriteZero => "Write zero".to_owned(),
+                ErrorKind::Interrupted => "Operation interrupted".to_owned(),
+                ErrorKind::Other => "Other os error".to_owned(),
+                ErrorKind::UnexpectedEof => "Unexpected end of file".to_owned(),
+                _ => "Unknown error".to_owned(),
+            }
+        },
+        None => "Unknown error".to_owned(),
+    }
+}
+
 

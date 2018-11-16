@@ -3,14 +3,18 @@ use std::env;
 use std::process;
 use std::path::{PathBuf};
 
-use lrg::{Lrg, Options};
+use lrg::{Lrg, Options, get_walkdir_error_str};
 
 use humansize::{FileSize, file_size_opts as options};
 
 // TODO non-recursive
+// TODO customize format
 // TODO colored output
 
 fn main() {
+    // Init env_logger
+    env_logger::init();
+
     // Get args
     let args: Vec<String> = env::args().collect();
 
@@ -32,10 +36,29 @@ fn main() {
     // Fetch entries 
     let entries = Lrg::new(&current_dir, &Options::default()).sort_descending().get_entries();
 
-    // use humansize::{FileSize, file_size_opts as options};
-    // println!("{}: {}", size.file_size(options::CONVENTIONAL).unwrap(), dir_entry.path().display());
+    // Options for printing humansize'd numbers
+    let hs_options = options::FileSizeOpts {
+        allow_negative: true,
+        ..options::CONVENTIONAL
+    };
 
-    for entry in entries[0..5].to_vec() {
-        println!("{}: {}", entry.metadata().expect("meta").len().file_size(options::CONVENTIONAL).unwrap(), entry.path().display());
+    // Iterate through entries
+    for (i, entry) in entries.iter().enumerate() {
+        // Break at number of requested entries
+        if i == 5 {
+            break;
+        }
+        
+        // Handle error getting meetadata
+        match entry.metadata() {
+            Ok(meta) => {
+                // Unwrap since guranteed to not panic due to options
+                println!("{}: {}", meta.len().file_size(&hs_options).unwrap(), entry.path().display());
+            },
+            Err(err) => {
+                let error_message = get_walkdir_error_str(&err);
+                println!("lrg: cannot get metadata of '{}': {}", entry.path().display(), error_message);
+            },
+        }
     }
 }
