@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Noah Rinehart <rinehart.noah@gmail.com>"]
 edition = "2018"
 
+[lib]
+name = "lrg"
+path = "src/lib.rs"
+
+[[bin]]
+name = "lrg"
+path = "src/bin/main.rs"
+
 [dependencies]
 walkdir = "2.2.7"
 humansize = "1.1.0"
