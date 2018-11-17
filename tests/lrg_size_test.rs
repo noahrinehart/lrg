@@ -140,12 +140,12 @@ fn test_basic_link_size() {
     // testdir/
     // ├── subdir/
     // │   ├── subsubdir/
-    // │   │   ├── subsubsomefile 3
-    // │   ├── link_somefile 2
-    // │   ├── subsmallerfile 6
-    // │   ├── subsomefile 4
-    // ├── evensmallerfile 7
-    // ├── smallerfile 5
+    // │   │   ├── subsubsomefile 2
+    // │   ├── link_somefile 1
+    // │   ├── subsmallerfile 5
+    // │   ├── subsomefile 3
+    // ├── evensmallerfile 6
+    // ├── smallerfile 4
     // └── somefile 1
     let path = Path::new("tests/testdir");
     let opts = LrgOptions {
