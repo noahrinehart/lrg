@@ -169,6 +169,7 @@ impl Lrg {
     /// ```
     /// 
     /// To use custom options, just supply a [`LrgOptions`] struct.
+    ///
     /// For example, to only search the base directoy, using the other default options:
     /// ```
     /// # use std::path::Path;
@@ -232,7 +233,8 @@ impl Lrg {
     }
 
     /// Sorts the lrg object entries by a custom sort function, and returns the lrg object.
-    /// For example, to search by extension:
+    ///
+    /// For example, to search by creation date:
     /// ```
     /// # use std::path::{Path, PathBuf};
     /// # use std::ffi::OsStr;
@@ -241,15 +243,21 @@ impl Lrg {
     /// let path = Path::new("./another/path");
     /// let mut lrg = Lrg::new(path, &LrgOptions::default());
     /// lrg.sort_by_custom(|a: &DirEntry, b: &DirEntry| {
-    ///     // Create helper function to find the extension form the `PathBuf`
-    ///     let extension = |x: &PathBuf| {
-    ///         match x.extension() {
-    ///             Some(str) => str,
-    ///             None => OsStr::new("").to_owned(),
+    ///     // Create custom function to get creation date of a `DirEntry`
+    ///     let creation_date = |x: &DirEntry| {
+    ///         match x.metadata() {
+    ///             Ok(meta) => {
+    ///                 match meta.created() {
+    ///                     Ok(created) => created,
+    ///                     Err(_) => std::time::SystemTime::UNIX_EPOCH,
+    ///                 }
+    ///             },
+    ///             // Default to UNIX epoch
+    ///             Err(_) => std::time::SystemTime::UNIX_EPOCH,
     ///         }
     ///     };
-    ///     // Make comparison
-    ///     extension(&a.into_path()).cmp(&extension(&b.into_path()))
+    ///     //Make comparison
+    ///     creation_date(a).cmp(&creation_date(b))
     /// });
     /// // Get entries
     /// let entries: Vec<DirEntry> = lrg.get_entries();
