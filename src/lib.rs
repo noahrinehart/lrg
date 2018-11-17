@@ -1,4 +1,7 @@
 
+extern crate walkdir;
+extern crate log;
+
 use std::cmp::Ordering;
 use std::path::Path;
 use std::io::ErrorKind;

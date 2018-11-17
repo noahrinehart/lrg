@@ -1,4 +1,7 @@
 
+extern crate lrg;
+extern crate humansize;
+
 use std::env;
 use std::process;
 use std::path::{PathBuf};
