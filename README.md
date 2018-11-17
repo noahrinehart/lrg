@@ -1,4 +1,4 @@
-# Lrg
+# lrg
 > A utility to help find the largest file(s) in a directory
 
 [![Linux build status](https://api.travis-ci.org/noahrinehart/lrg.svg)](https://travis-ci.org/noahrinehart/lrg)

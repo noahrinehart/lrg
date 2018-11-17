@@ -16,6 +16,8 @@ use clap::{App, Arg};
 // TODO customize format
 // TODO colored output
 // TODO relative path (arg for absoulte -a)
+// TODO test calling on a file
+// TODO test following links
 
 fn main() {
     // Init env_logger

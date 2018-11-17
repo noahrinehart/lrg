@@ -147,9 +147,6 @@ pub struct Lrg {
     entries: Vec<DirEntry>,
 }
 
-// TODO test calling on a file
-// TODO test following links
-
 impl Lrg {
     /// Creates a new Lrg with options and at the given path.
     /// 
