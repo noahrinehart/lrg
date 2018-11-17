@@ -1,16 +1,15 @@
-
-extern crate lrg;
-extern crate humansize;
 extern crate clap;
+extern crate humansize;
+extern crate lrg;
 
 use std::env;
-use std::process;
 use std::path::PathBuf;
+use std::process;
 
-use lrg::{Lrg, LrgOptions, get_walkdir_error_str};
+use lrg::{get_walkdir_error_str, Lrg, LrgOptions};
 
-use humansize::{FileSize, file_size_opts as options};
 use clap::{App, Arg};
+use humansize::{file_size_opts as options, FileSize};
 
 // TODO build script completions
 // TODO customize format
@@ -65,7 +64,7 @@ fn main() {
             Err(_err) => {
                 println!("Error: couldn't get current directory");
                 process::exit(1);
-            },
+            }
         },
     };
 
@@ -76,7 +75,7 @@ fn main() {
             Err(_err) => {
                 println!("Error: couldn't parse number of files to list");
                 process::exit(1);
-            },
+            }
         },
         None => 5,
     };
@@ -91,7 +90,7 @@ fn main() {
                 Err(_err) => {
                     println!("Error: couldn't parse max depth");
                     process::exit(1);
-                },
+                }
             },
             None => ::std::usize::MAX,
         }
@@ -110,8 +109,10 @@ fn main() {
         ..LrgOptions::default()
     };
 
-    // Fetch entries 
-    let entries = Lrg::new(&current_dir, &options).sort_descending().get_entries();
+    // Fetch entries
+    let entries = Lrg::new(&current_dir, &options)
+        .sort_descending()
+        .get_entries();
 
     if entries.is_empty() {
         println!("lrg: no files found");
@@ -130,17 +131,25 @@ fn main() {
         if i == num_entries {
             break;
         }
-        
+
         // Handle error getting meetadata
         match entry.metadata() {
             Ok(meta) => {
                 // Unwrap since guranteed to not panic due to options
-                println!("{}: {}", meta.len().file_size(&hs_options).unwrap(), entry.path().display());
-            },
+                println!(
+                    "{}: {}",
+                    meta.len().file_size(&hs_options).unwrap(),
+                    entry.path().display()
+                );
+            }
             Err(err) => {
                 let error_message = get_walkdir_error_str(&err);
-                println!("lrg: cannot get metadata of '{}': {}", entry.path().display(), error_message);
-            },
+                println!(
+                    "lrg: cannot get metadata of '{}': {}",
+                    entry.path().display(),
+                    error_message
+                );
+            }
         }
     }
 }

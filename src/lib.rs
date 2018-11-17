@@ -1,4 +1,3 @@
-
 /*! 
 `lrg` is a library for find the largest (or smallest) files in a given directory.
 There is also support for searching by a custom function, given [`DirEntry`]'s.
@@ -18,7 +17,7 @@ let path = Path::new("./some/path");
 // Create the Lrg object to store the entries
 let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
 // Sort and get the entries
-let mut entries: Vec<DirEntry> = lrg.sort_by(SortBy::Descending).get_entries();
+let mut entries: Vec<DirEntry> = lrg.sort_by(&SortBy::Descending).get_entries();
 // You can also call `sort_descending`
 entries = lrg.sort_descending().get_entries();
 // These calls mutate the underlying struct, so calling:
@@ -54,16 +53,15 @@ let entries: Vec<DirEntry> = lrg.get_entries();
 [`walkdir::DirEntry`]: https://docs.rs/walkdir/2.2.7/walkdir/struct.DirEntry.html
 */
 
-extern crate walkdir;
 extern crate log;
+extern crate walkdir;
 
 use std::cmp::Ordering;
-use std::path::Path;
 use std::io::ErrorKind;
+use std::path::Path;
 
-use walkdir::{WalkDir};
-use log::{warn};
-
+use log::warn;
+use walkdir::WalkDir;
 
 /// Specifies the sorting algorithm.
 pub enum SortBy {
@@ -74,7 +72,7 @@ pub enum SortBy {
 }
 
 /// Options when constructing an `Lrg` struct.
-/// 
+///
 /// # Examples
 /// Can be constructed like normal:
 /// ```
@@ -95,7 +93,7 @@ pub enum SortBy {
 ///     ..LrgOptions::default()
 /// };
 /// ```
-/// 
+///
 /// [`default options`]: struct.LrgOptions.html#method.default
 
 #[derive(Clone, Debug)]
@@ -140,7 +138,7 @@ pub type DirEntry = walkdir::DirEntry;
 
 /// The main struct for searching for files by size.
 /// Constructed using [`new`], passing in a path and options.
-/// 
+///
 /// [`new`]: struct.Lrg.html#method.new
 #[derive(Clone, Debug)]
 pub struct Lrg {
@@ -149,7 +147,7 @@ pub struct Lrg {
 
 impl Lrg {
     /// Creates a new Lrg with options and at the given path.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// # use std::path::Path;
@@ -173,12 +171,12 @@ impl Lrg {
     /// [`LrgOptions`]: struct.LrgOptions.html
     pub fn new(path: &Path, options: &LrgOptions) -> Self {
         let mut entries: Vec<DirEntry> = Vec::new();
-        
+
         // Walk directory recursivley (prints debug messages if error)
         for entry in WalkDir::new(&path)
             .min_depth(options.min_depth)
             .max_depth(options.max_depth)
-            .follow_links(options.follow_links) 
+            .follow_links(options.follow_links)
         {
             match entry {
                 // Entry can be found
@@ -188,18 +186,16 @@ impl Lrg {
                     } else if entry.file_type().is_file() {
                         entries.push(entry.to_owned());
                     }
-                },
+                }
                 Err(err) => {
                     let path = err.path().unwrap_or_else(|| Path::new("")).display();
                     let error_message = get_walkdir_error_str(&err);
                     println!("lrg: error opening '{}': {}", path, error_message);
-                },
+                }
             }
         }
 
-        Lrg {
-            entries,
-        }
+        Lrg { entries }
     }
 
     /// Sorts the lrg object entries, and returns the lrg object.
@@ -211,9 +207,9 @@ impl Lrg {
     /// # use lrg::{Lrg, LrgOptions, SortBy};
     /// let path = Path::new(".");
     /// let mut lrg = Lrg::new(path, &LrgOptions::default());
-    /// lrg.sort_by(SortBy::Descending);
-    /// ``` 
-    pub fn sort_by(&mut self, cmp: SortBy) -> &Self {
+    /// lrg.sort_by(&SortBy::Descending);
+    /// ```
+    pub fn sort_by(&mut self, cmp: &SortBy) -> &Self {
         match cmp {
             SortBy::Ascending => self.sort_ascending(),
             SortBy::Descending => self.sort_descending(),
@@ -250,15 +246,16 @@ impl Lrg {
     /// // Get entries
     /// let entries: Vec<DirEntry> = lrg.get_entries();
     /// ```
-    pub fn sort_by_custom<F>(&mut self, cmp: F) -> &Self 
-    where F: FnMut(&DirEntry, &DirEntry) -> Ordering
+    pub fn sort_by_custom<F>(&mut self, cmp: F) -> &Self
+    where
+        F: FnMut(&DirEntry, &DirEntry) -> Ordering,
     {
         self.entries.sort_unstable_by(cmp);
         self
     }
 
     /// Sorts the lrg object entries by ascending file size, and returns the lrg object.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// # use std::path::Path;
@@ -275,7 +272,7 @@ impl Lrg {
     }
 
     /// Sorts the lrg object entries by descending file size, and returns the lrg object.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// # use std::path::Path;
@@ -286,7 +283,7 @@ impl Lrg {
     /// ```
     pub fn sort_descending(&mut self) -> &Self {
         self.entries.sort_unstable_by(|a: &DirEntry, b: &DirEntry| {
-            Self::get_size(b).cmp(&Self::get_size(a))    
+            Self::get_size(b).cmp(&Self::get_size(a))
         });
         self
     }
@@ -295,14 +292,18 @@ impl Lrg {
         match entry.metadata() {
             Ok(meta) => meta.len(),
             Err(err) => {
-                warn!("Couldn't get metadata for {}: {:?}", entry.path().display(), err);
+                warn!(
+                    "Couldn't get metadata for {}: {:?}",
+                    entry.path().display(),
+                    err
+                );
                 0
-            },
+            }
         }
     }
 
     /// Gets the entries from the [`Lrg`] object.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// # use std::path::Path;
@@ -344,7 +345,7 @@ pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
                 ErrorKind::UnexpectedEof => "Unexpected end of file".to_owned(),
                 _ => "Unknown error".to_owned(),
             }
-        },
+        }
         None => "Unknown error".to_owned(),
     }
 }
