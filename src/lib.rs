@@ -351,3 +351,5 @@ pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
         None => "Unknown error".to_owned(),
     }
 }
+
+// Tests are located in <PROJECT_ROOT>/tests folder
