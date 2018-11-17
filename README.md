@@ -1,6 +1,10 @@
 # Lrg
 > A utility to help find the largest file(s) in a directory
 
+[![Linux build status](https://api.travis-ci.org/noahrinehart/lrg.svg)](https://travis-ci.org/noahrinehart/lrg)
+[![Coverage Status](https://coveralls.io/repos/github/noahrinehart/lrg/badge.svg?branch=master)](https://coveralls.io/github/noahrinehart/lrg?branch=master)
+[![crates.io](https://meritbadge.herokuapp.com/lrg)](https://crates.io/crates/lrg)
+
 ## Requirements
 * [rust](https://www.rust-lang.org/en-US/)
 
