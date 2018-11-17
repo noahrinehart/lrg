@@ -2,6 +2,18 @@
 name = "lrg"
 version = "0.1.0"
 authors = ["Noah Rinehart <rinehart.noah@gmail.com>"]
+description = "A utility to help find the largest file(s) in a directory"
+documentation = "https://docs.rs/lrg/"
+homepage = "https://github.com/noahrinehart/lrg"
+repository = "https://github.com/noahrinehart/lrg"
+readme = "README.md"
+keywords = ["lrg", "largest", "smallest", "file", "find"]
+categories = ["command-line-utilities", "filesystem"]
+license = "MIT"
+
+[badges]
+travis-ci = { repository = "noahrinehart/lrg" }
+coveralls = { repository = "noahrinehart/lrg" }
 
 [lib]
 name = "lrg"
