@@ -158,18 +158,35 @@ fn test_basic_link_order() {
     };
     let mut lrg = Lrg::new(path, &opts);
     let entries = lrg.sort_descending().get_entries();
-    test_entries_against_filenames(
-        &entries, 
-        &vec_of_strings![
-            "somefile",
-            "link_somefile",
-            "subsubsomefile",
-            "subsomefile",
-            "smallerfile",
-            "subsmallerfile",
-            "evensmallerfile"
-        ]
-    );
+    // Custom call since link will be same size
+    let first_filename = entries[0].path().file_name().expect("Cannot get filename");
+    if first_filename == OsStr::new("somefile")  {
+        test_entries_against_filenames(
+            &entries, 
+            &vec_of_strings![
+                "somefile",
+                "link_somefile",
+                "subsubsomefile",
+                "subsomefile",
+                "smallerfile",
+                "subsmallerfile",
+                "evensmallerfile"
+            ]
+        );
+    } else {
+        test_entries_against_filenames(
+            &entries, 
+            &vec_of_strings![
+                "link_somefile",
+                "somefile",
+                "subsubsomefile",
+                "subsomefile",
+                "smallerfile",
+                "subsmallerfile",
+                "evensmallerfile"
+            ]
+        );
+    }
 }
 
 #[test]
