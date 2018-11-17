@@ -38,8 +38,6 @@ pub struct Lrg {
     entries: Vec<DirEntry>,
 }
 
-// TODO include dirs
-// TODO error handling logs
 // TODO tests
 // TODO test calling on a file
 // TODO test following links
