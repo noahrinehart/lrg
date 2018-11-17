@@ -29,7 +29,7 @@ fn main() {
             .short("n")
             .long("number")
             .value_name("NUM_ENTRIES")
-            .help("sets the number of files to list")
+            .help("sets the number of files to list (default: 5)")
             .takes_value(true))
         .arg(Arg::with_name("RECURSIVE")
             .short("r")
@@ -42,9 +42,13 @@ fn main() {
             .help("sets the maximum depth of folders to search, unless --no-recursion specified (default: max possible)")
             .takes_value(true))
         .arg(Arg::with_name("FOLLOW_LINKS")
-            .short("f")
+            .short("l")
             .long("follow-links")
-            .help("will follow links of files"))
+            .help("will follow links of files (default: false)"))
+        .arg(Arg::with_name("DIRECTORIES")
+            .short("i")
+            .long("directories")
+            .help("include directories in search (default: false)"))
         .arg(Arg::with_name("FILEPATH")
             .help("the path to search in")
             .index(1))
@@ -93,9 +97,13 @@ fn main() {
     // Whether to follow links or not
     let follow_links = matches.is_present("FOLLOW_LINKS");
 
+    // Whether to include directories or not
+    let include_dirs = matches.is_present("DIRECTORIES");
+
     let options = Options {
         max_depth,
         follow_links,
+        include_dirs,
         ..Options::default()
     };
 

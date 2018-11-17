@@ -19,6 +19,7 @@ pub struct Options {
     pub min_depth: usize,
     pub max_depth: usize,
     pub follow_links: bool,
+    pub include_dirs: bool,
 }
 
 impl Default for Options {
@@ -27,6 +28,7 @@ impl Default for Options {
             min_depth: 0,
             max_depth: std::usize::MAX,
             follow_links: false,
+            include_dirs: false,
         }
     }
 }
@@ -53,9 +55,15 @@ impl Lrg {
             .follow_links(options.follow_links) 
         {
             match entry {
+                // Entry can be found
                 Ok(entry) => {
-                    if entry.file_type().is_file() { 
-                        entries.push(entry.to_owned());
+                    match options.include_dirs {
+                        true => entries.push(entry.to_owned()),
+                        false => { 
+                            if entry.file_type().is_file() { 
+                                entries.push(entry.to_owned());
+                            }
+                        },
                     }
                 },
                 Err(err) => {
