@@ -13,7 +13,6 @@ use humansize::{FileSize, file_size_opts as options};
 use clap::{App, Arg};
 
 // TODO build script completions
-// TODO non-recursive
 // TODO customize format
 // TODO colored output
 
@@ -26,14 +25,28 @@ fn main() {
         .version("0.1")
         .author("Noah Rinehart <rinehart.noah@gmail.com>")
         .about("A utility to help find the largest file(s) in a directory")
-        .arg(Arg::with_name("number")
+        .arg(Arg::with_name("NUMBER")
             .short("n")
             .long("number")
-            .value_name("NUMBER")
-            .help("Sets the number of files to list")
+            .value_name("NUM_ENTRIES")
+            .help("sets the number of files to list")
             .takes_value(true))
+        .arg(Arg::with_name("RECURSIVE")
+            .short("r")
+            .long("no-recursion")
+            .help("will only visit files in specified directory, takes precedence over max-depth (default: false)"))
+        .arg(Arg::with_name("MAX_DEPTH")
+            .short("d")
+            .long("max-depth")
+            .value_name("MAX_DEPTH")
+            .help("sets the maximum depth of folders to search, unless --no-recursion specified (default: max possible)")
+            .takes_value(true))
+        .arg(Arg::with_name("FOLLOW_LINKS")
+            .short("f")
+            .long("follow-links")
+            .help("will follow links of files"))
         .arg(Arg::with_name("FILEPATH")
-            .help("The path to search in")
+            .help("the path to search in")
             .index(1))
         .get_matches();
 
@@ -50,7 +63,7 @@ fn main() {
     };
 
     // Get number of files to get
-    let num_entries = match matches.value_of("number") {
+    let num_entries = match matches.value_of("NUMBER") {
         Some(number) => match number.parse::<usize>() {
             Ok(number) => number,
             Err(_err) => {
@@ -61,8 +74,33 @@ fn main() {
         None => 5,
     };
 
+    // Get max depth of find
+    let max_depth = if matches.is_present("RECURSIVE") {
+        1
+    } else {
+        match matches.value_of("MAX_DEPTH") {
+            Some(depth) => match depth.parse::<usize>() {
+                Ok(depth) => depth,
+                Err(_err) => {
+                    println!("Error: couldn't parse max depth");
+                    process::exit(1);
+                },
+            },
+            None => ::std::usize::MAX,
+        }
+    };
+
+    // Whether to follow links or not
+    let follow_links = matches.is_present("FOLLOW_LINKS");
+
+    let options = Options {
+        max_depth,
+        follow_links,
+        ..Options::default()
+    };
+
     // Fetch entries 
-    let entries = Lrg::new(&current_dir, &Options::default()).sort_descending().get_entries();
+    let entries = Lrg::new(&current_dir, &options).sort_descending().get_entries();
 
     // Options for printing humansize'd numbers
     let hs_options = options::FileSizeOpts {

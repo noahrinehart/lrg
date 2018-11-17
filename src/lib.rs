@@ -40,6 +40,7 @@ pub struct Lrg {
 // TODO error handling logs
 // TODO tests
 // TODO test calling on a file
+// TODO test following links
 
 impl Lrg {
     pub fn new(path: &Path, options: &Options) -> Self {
