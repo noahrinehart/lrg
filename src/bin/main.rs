@@ -1,15 +1,18 @@
 
 extern crate lrg;
 extern crate humansize;
+extern crate clap;
 
 use std::env;
 use std::process;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 use lrg::{Lrg, Options, get_walkdir_error_str};
 
 use humansize::{FileSize, file_size_opts as options};
+use clap::{App, Arg};
 
+// TODO build script completions
 // TODO non-recursive
 // TODO customize format
 // TODO colored output
@@ -19,21 +22,30 @@ fn main() {
     env_logger::init();
 
     // Get args
-    let args: Vec<String> = env::args().collect();
+    let matches = App::new("lrg")
+        .version("0.1")
+        .author("Noah Rinehart <rinehart.noah@gmail.com>")
+        .about("A utility to help find the largest file(s) in a directory")
+        .arg(Arg::with_name("number")
+            .short("n")
+            .long("number")
+            .value_name("NUMBER")
+            .help("Sets the number of files to list")
+            .takes_value(true))
+        .arg(Arg::with_name("FILEPATH")
+            .help("The path to search in")
+            .index(1))
+        .get_matches();
 
-    // Get current directory (1st param or current directory)
-    let current_dir = if args.is_empty() || args.len() == 1 {
-        // If program path is only argument
-        match env::current_dir() {
+    let current_dir = match matches.value_of("FILEPATH") {
+        Some(filepath) => PathBuf::from(filepath),
+        None => match env::current_dir() {
             Ok(path) => path.as_path().to_owned(),
             _ => {
                 println!("Error: couldn't get current directory");
                 process::exit(1);
             }
         }
-    } else {
-        // If argument supplied
-        PathBuf::from(&args[1]).as_path().to_owned()
     };
 
     // Fetch entries 

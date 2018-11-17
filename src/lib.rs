@@ -116,7 +116,7 @@ impl Lrg {
 pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
     match err.io_error() {
         Some(ioerr) => {
-            // Because ErrorKind.as_str() is private
+            // Because ErrorKind.as_str() is private, if someone finds a fix, send a pr
             match ioerr.kind() {
                 ErrorKind::NotFound => "Entity not found".to_owned(),
                 ErrorKind::PermissionDenied => "Permission denied".to_owned(),
