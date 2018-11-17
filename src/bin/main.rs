@@ -15,8 +15,8 @@ use humansize::{file_size_opts as options, FileSize};
 // TODO customize format
 // TODO colored output
 // TODO relative path (arg for absoulte -a)
-// TODO test calling on a file
-// TODO test following links
+// TODO filterentry, custom filter https://docs.rs/walkdir/2.2.7/walkdir/struct.FilterEntry.html
+// TODO handle errors function options for lib
 
 fn main() {
     // Init env_logger

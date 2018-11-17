@@ -181,9 +181,9 @@ impl Lrg {
             match entry {
                 // Entry can be found
                 Ok(entry) => {
-                    if options.include_dirs {
+                    if entry.file_type().is_dir() && options.include_dirs {
                         entries.push(entry.to_owned())
-                    } else if entry.file_type().is_file() {
+                    } else if entry.file_type().is_file() || entry.file_type().is_symlink() {
                         entries.push(entry.to_owned());
                     }
                 }
