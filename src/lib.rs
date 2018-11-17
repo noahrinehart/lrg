@@ -9,22 +9,39 @@ use std::io::ErrorKind;
 use walkdir::{DirEntry, WalkDir};
 use log::{warn};
 
+/// Specifies the sorting algorithm by filesize.
 pub enum SortBy {
+    /// Sorts by filesize ascending
     Ascending,
+    /// Sorts by filesize descending
     Descending,
 }
 
+/// Options when constructing an `LRG` struct.
 #[derive(Clone, Debug)]
-pub struct Options {
+pub struct LrgOptions {
+    /// Specifies them minimum depth for searching
+    /// Minimum depth is the depth at which to start searching
     pub min_depth: usize,
+    // Specifies the maximum depth for searching
+    // Maximum depth is the depth at which to stop searching
     pub max_depth: usize,
+    /// Specifies whether to follow links while searching
     pub follow_links: bool,
+    /// Speicifies whether to include directories in the search
     pub include_dirs: bool,
 }
 
-impl Default for Options {
-    fn default() -> Options {
-        Options {
+/// Implements default options
+impl Default for LrgOptions {
+    /// The default function
+    ///
+    /// For example:
+    /// ```
+    /// let options = LrgOptions::default();
+    /// ```
+    fn default() -> LrgOptions {
+        LrgOptions {
             min_depth: 0,
             max_depth: std::usize::MAX,
             follow_links: false,
@@ -33,6 +50,7 @@ impl Default for Options {
     }
 }
 
+/// The main struct for searching for files by size
 #[derive(Clone, Debug)]
 pub struct Lrg {
     entries: Vec<DirEntry>,
@@ -43,7 +61,8 @@ pub struct Lrg {
 // TODO test following links
 
 impl Lrg {
-    pub fn new(path: &Path, options: &Options) -> Self {
+    /// Creates a new Lrg with options and at the given path
+    pub fn new(path: &Path, options: &LrgOptions) -> Self {
         let mut entries: Vec<DirEntry> = Vec::new();
         
         // Walk directory recursivley (prints debug messages if error)
@@ -77,6 +96,7 @@ impl Lrg {
         }
     }
 
+    /// Sorts the lrg object entries, and returns the lrg object
     pub fn sort_by(self, cmp: &SortBy) -> Self {
         match cmp {
             SortBy::Ascending => self.sort_ascending(),
@@ -84,6 +104,7 @@ impl Lrg {
         }
     }
 
+    /// Sorts the lrg object entries by a custom sort function, and returns the lrg object
     pub fn sort_by_custom<F>(mut self, cmp: F) -> Self 
     where F: FnMut(&DirEntry, &DirEntry) -> Ordering
     {
@@ -91,6 +112,7 @@ impl Lrg {
         self
     }
 
+    // Sorts the lrg object entries by ascending file size, and returns the lrg object
     pub fn sort_ascending(mut self) -> Self {
         self.entries.sort_unstable_by(|a: &DirEntry, b: &DirEntry| {
             Self::get_size(a).cmp(&Self::get_size(b))    
@@ -98,6 +120,7 @@ impl Lrg {
         self
     }
 
+    // Sorts the lrg object entries by descending file size, and returns the lrg object
     pub fn sort_descending(mut self) -> Self {
         self.entries.sort_unstable_by(|a: &DirEntry, b: &DirEntry| {
             Self::get_size(b).cmp(&Self::get_size(a))    
@@ -115,6 +138,7 @@ impl Lrg {
         }
     }
 
+    /// Gets the entries from the lrg object
     pub fn get_entries(&self) -> Vec<DirEntry> {
         self.entries.clone()
     }

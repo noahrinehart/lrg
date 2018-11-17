@@ -7,7 +7,7 @@ use std::env;
 use std::process;
 use std::path::PathBuf;
 
-use lrg::{Lrg, Options, get_walkdir_error_str};
+use lrg::{Lrg, LrgOptions, get_walkdir_error_str};
 
 use humansize::{FileSize, file_size_opts as options};
 use clap::{App, Arg};
@@ -100,11 +100,11 @@ fn main() {
     // Whether to include directories or not
     let include_dirs = matches.is_present("DIRECTORIES");
 
-    let options = Options {
+    let options = LrgOptions {
         max_depth,
         follow_links,
         include_dirs,
-        ..Options::default()
+        ..LrgOptions::default()
     };
 
     // Fetch entries 
