@@ -17,6 +17,7 @@ use humansize::{file_size_opts as options, FileSize};
 // TODO relative path (arg for absoulte -a)
 // TODO filterentry, custom filter https://docs.rs/walkdir/2.2.7/walkdir/struct.FilterEntry.html
 // TODO handle errors function options for lib
+// TODO sort by ascending cmdline
 
 fn main() {
     // Init env_logger
