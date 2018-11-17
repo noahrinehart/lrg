@@ -15,6 +15,7 @@ use clap::{App, Arg};
 // TODO build script completions
 // TODO customize format
 // TODO colored output
+// TODO relative path (arg for absoulte -a)
 
 fn main() {
     // Init env_logger
@@ -109,6 +110,11 @@ fn main() {
 
     // Fetch entries 
     let entries = Lrg::new(&current_dir, &options).sort_descending().get_entries();
+
+    if entries.is_empty() {
+        println!("lrg: no files found");
+        process::exit(1);
+    }
 
     // Options for printing humansize'd numbers
     let hs_options = options::FileSizeOpts {

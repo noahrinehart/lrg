@@ -1,4 +1,62 @@
 
+/*! 
+`lrg` is a library for find the largest (or smallest) files in a given directory.
+There is also support for searching by a custom function, given [`DirEntry`]'s.
+In addition to this, you can specify (in [`LrgOptions`]) the minimum depth and maximum depth to search for,
+such as if you wanted to prevent recursion. You can also speficy whether to follow links or to include
+directories.
+
+Note: [`DirEntry`] is a typedef of [`walkdir::DirEntry`]
+
+## Examples
+To find the largest files in a directory:
+```
+use std::path::Path;
+use lrg::{Lrg, LrgOptions, DirEntry, SortBy};
+
+// Get a path to some directory (or file)
+let path = Path::new("./some/path");
+// Create the Lrg object to store the entries
+let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+// Sort and get the entries
+let mut entries: Vec<DirEntry> = lrg.sort_by(SortBy::Descending).get_entries();
+// You can also call `sort_descending`
+entries = lrg.sort_descending().get_entries();
+// These calls mutate the underlying struct, so calling:
+entries = lrg.get_entries();
+// Will give you the same as the call before it
+```
+
+To find the smallest files in a directory:
+```
+# use std::path::Path;
+# use lrg::{Lrg, LrgOptions, DirEntry};
+
+let path = Path::new("./some/other/path");
+let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+let entries: Vec<DirEntry> = lrg.sort_ascending().get_entries();
+```
+
+To search using a custom function:
+```
+# use std::path::Path;
+# use lrg::{Lrg, LrgOptions, DirEntry};
+
+let path = Path::new("./another/path");
+let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+// Sort by filename (note: not the full path)
+lrg.sort_by_custom(|a: &DirEntry, b: &DirEntry| {
+    a.file_name().cmp(b.file_name())
+});
+let entries: Vec<DirEntry> = lrg.get_entries();
+```
+
+[`Lrg`]: struct.Lrg.html
+[`DirEntry`]: struct.DirEntry.html
+[`LrgOptions`]: struct.LrgOptions.html
+[`walkdir::DirEntry`]: https://docs.rs/walkdir/2.2.7/walkdir/struct.DirEntry.html
+*/
+
 extern crate walkdir;
 extern crate log;
 
@@ -6,10 +64,11 @@ use std::cmp::Ordering;
 use std::path::Path;
 use std::io::ErrorKind;
 
-use walkdir::{DirEntry, WalkDir};
+use walkdir::{WalkDir};
 use log::{warn};
 
-/// Specifies the sorting algorithm by filesize.
+
+/// Specifies the sorting algorithm.
 pub enum SortBy {
     /// Sorts by filesize ascending
     Ascending,
@@ -17,7 +76,33 @@ pub enum SortBy {
     Descending,
 }
 
-/// Options when constructing an `LRG` struct.
+/// Options when constructing an `Lrg` struct.
+/// 
+/// Can be constructed like normal:
+/// ```
+/// # use lrg::LrgOptions;
+///
+/// let opts = LrgOptions {
+///     min_depth: 1,
+///     max_depth: 5,
+///     follow_links: false,
+///     include_dirs: true,
+/// };
+/// ```
+/// 
+/// Or can also inherit [`default options`]:
+/// ```
+/// # use lrg::LrgOptions;
+///
+/// let opts = LrgOptions {
+///     min_depth: 5,
+///     max_depth: 10,
+///     ..LrgOptions::default()
+/// };
+/// ```
+/// 
+/// [`default options`]: struct.LrgOptions.html#method.default
+
 #[derive(Clone, Debug)]
 pub struct LrgOptions {
     /// Specifies them minimum depth for searching
@@ -34,10 +119,14 @@ pub struct LrgOptions {
 
 /// Implements default options
 impl Default for LrgOptions {
-    /// The default function
+    /// The default function.
     ///
     /// For example:
     /// ```
+    /// use lrg::LrgOptions;
+    /// 
+    /// // Gives options that recurse as far as possible, don't follow links,
+    /// // and don't include directories.
     /// let options = LrgOptions::default();
     /// ```
     fn default() -> LrgOptions {
@@ -50,18 +139,49 @@ impl Default for LrgOptions {
     }
 }
 
-/// The main struct for searching for files by size
+/// A type copy of the [`walkdir::DirEntry`] struct.
+///
+/// [`walkdir::DirEntry`]: https://docs.rs/walkdir/2.2.7/walkdir/struct.DirEntry.html
+pub type DirEntry = walkdir::DirEntry;
+
+/// The main struct for searching for files by size.
+/// Constructed using [`new`], passing in a path and options.
+/// 
+/// [`new`]: struct.Lrg.html#method.new
 #[derive(Clone, Debug)]
 pub struct Lrg {
     entries: Vec<DirEntry>,
 }
 
-// TODO tests
 // TODO test calling on a file
 // TODO test following links
 
 impl Lrg {
-    /// Creates a new Lrg with options and at the given path
+    /// Creates a new Lrg with options and at the given path.
+    /// 
+    /// For example:
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::{Lrg, LrgOptions};
+    /// 
+    /// let path = Path::new(".");
+    /// let lrg = Lrg::new(path, &LrgOptions::default());
+    /// ```
+    /// 
+    /// To use custom options, just supply a [`LrgOptions`] struct.
+    /// For example, to only search the base directoy, using the other default options:
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::LrgOptions;
+    /// 
+    /// let path = Path::new(".");
+    /// let opts = LrgOptions {
+    ///     min_depth: 1,
+    ///     ..LrgOptions::default()
+    /// };
+    /// ```
+    /// 
+    /// [`LrgOptions`]: struct.LrgOptions.html
     pub fn new(path: &Path, options: &LrgOptions) -> Self {
         let mut entries: Vec<DirEntry> = Vec::new();
         
@@ -74,13 +194,10 @@ impl Lrg {
             match entry {
                 // Entry can be found
                 Ok(entry) => {
-                    match options.include_dirs {
-                        true => entries.push(entry.to_owned()),
-                        false => { 
-                            if entry.file_type().is_file() { 
-                                entries.push(entry.to_owned());
-                            }
-                        },
+                    if options.include_dirs {
+                        entries.push(entry.to_owned())
+                    } else if entry.file_type().is_file() {
+                        entries.push(entry.to_owned());
                     }
                 },
                 Err(err) => {
@@ -96,32 +213,84 @@ impl Lrg {
         }
     }
 
-    /// Sorts the lrg object entries, and returns the lrg object
-    pub fn sort_by(self, cmp: &SortBy) -> Self {
+    /// Sorts the lrg object entries, and returns the lrg object.
+    ///
+    /// For example, to get the largest files first:
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::{Lrg, LrgOptions, SortBy};
+    /// 
+    /// let path = Path::new(".");
+    /// let mut lrg = Lrg::new(path, &LrgOptions::default());
+    /// lrg.sort_by(SortBy::Descending);
+    /// ``` 
+    pub fn sort_by(&mut self, cmp: SortBy) -> &Self {
         match cmp {
             SortBy::Ascending => self.sort_ascending(),
             SortBy::Descending => self.sort_descending(),
         }
     }
 
-    /// Sorts the lrg object entries by a custom sort function, and returns the lrg object
-    pub fn sort_by_custom<F>(mut self, cmp: F) -> Self 
+    /// Sorts the lrg object entries by a custom sort function, and returns the lrg object.
+    /// For example, to search by extension:
+    /// ```
+    /// # use std::path::{Path, PathBuf};
+    /// # use std::ffi::OsStr;
+    /// # use lrg::{Lrg, LrgOptions, DirEntry};
+    ///
+    /// let path = Path::new("./another/path");
+    /// let mut lrg = Lrg::new(path, &LrgOptions::default());
+    /// lrg.sort_by_custom(|a: &DirEntry, b: &DirEntry| {
+    ///     // Create helper function to find the extension form the `PathBuf`
+    ///     let extension = |x: &PathBuf| {
+    ///         match x.extension() {
+    ///             Some(str) => str,
+    ///             None => OsStr::new("").to_owned(),
+    ///         }
+    ///     };
+    ///     // Make comparison
+    ///     extension(&a.into_path()).cmp(&extension(&b.into_path()))
+    /// });
+    /// // Get entries
+    /// let entries: Vec<DirEntry> = lrg.get_entries();
+    /// ```
+    pub fn sort_by_custom<F>(&mut self, cmp: F) -> &Self 
     where F: FnMut(&DirEntry, &DirEntry) -> Ordering
     {
         self.entries.sort_unstable_by(cmp);
         self
     }
 
-    // Sorts the lrg object entries by ascending file size, and returns the lrg object
-    pub fn sort_ascending(mut self) -> Self {
+    /// Sorts the lrg object entries by ascending file size, and returns the lrg object.
+    /// 
+    /// For example:
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::{Lrg, LrgOptions};
+    /// 
+    /// let path = Path::new("./another/path");
+    /// let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+    /// let entries = lrg.sort_ascending().get_entries();
+    /// ```
+    pub fn sort_ascending(&mut self) -> &Self {
         self.entries.sort_unstable_by(|a: &DirEntry, b: &DirEntry| {
-            Self::get_size(a).cmp(&Self::get_size(b))    
+            Self::get_size(a).cmp(&Self::get_size(b))
         });
         self
     }
 
-    // Sorts the lrg object entries by descending file size, and returns the lrg object
-    pub fn sort_descending(mut self) -> Self {
+    /// Sorts the lrg object entries by descending file size, and returns the lrg object.
+    /// 
+    /// For example:
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::{Lrg, LrgOptions};
+    /// 
+    /// let path = Path::new("./another/path");
+    /// let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+    /// let entries = lrg.sort_descending().get_entries();
+    /// ```
+    pub fn sort_descending(&mut self) -> &Self {
         self.entries.sort_unstable_by(|a: &DirEntry, b: &DirEntry| {
             Self::get_size(b).cmp(&Self::get_size(a))    
         });
@@ -138,12 +307,16 @@ impl Lrg {
         }
     }
 
-    /// Gets the entries from the lrg object
+    /// Gets the entries from the [`Lrg`] object.
+    /// 
+    /// [`Lrg`]: struct.Lrg.html
     pub fn get_entries(&self) -> Vec<DirEntry> {
         self.entries.clone()
     }
 }
 
+/// This function gets a string for a walkdir error.
+/// This is needed since `io_error.to_str()` is not public.
 pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
     match err.io_error() {
         Some(ioerr) => {
@@ -173,5 +346,3 @@ pub fn get_walkdir_error_str(err: &walkdir::Error) -> String {
         None => "Unknown error".to_owned(),
     }
 }
-
-
