@@ -37,15 +37,28 @@ fn main() {
             .index(1))
         .get_matches();
 
+    // Get directory to search
     let current_dir = match matches.value_of("FILEPATH") {
         Some(filepath) => PathBuf::from(filepath),
         None => match env::current_dir() {
             Ok(path) => path.as_path().to_owned(),
-            _ => {
+            Err(_err) => {
                 println!("Error: couldn't get current directory");
                 process::exit(1);
-            }
-        }
+            },
+        },
+    };
+
+    // Get number of files to get
+    let num_entries = match matches.value_of("number") {
+        Some(number) => match number.parse::<usize>() {
+            Ok(number) => number,
+            Err(_err) => {
+                println!("Error: couldn't parse number of files to list");
+                process::exit(1);
+            },
+        },
+        None => 5,
     };
 
     // Fetch entries 
@@ -60,7 +73,7 @@ fn main() {
     // Iterate through entries
     for (i, entry) in entries.iter().enumerate() {
         // Break at number of requested entries
-        if i == 5 {
+        if i == num_entries {
             break;
         }
         
