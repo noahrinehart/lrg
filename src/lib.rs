@@ -55,7 +55,7 @@ impl Lrg {
                     }
                 },
                 Err(err) => {
-                    let path = err.path().unwrap_or(Path::new("")).display();
+                    let path = err.path().unwrap_or_else(|| Path::new("")).display();
                     let error_message = get_walkdir_error_str(&err);
                     println!("lrg: error opening '{}': {}", path, error_message);
                 },
@@ -67,7 +67,7 @@ impl Lrg {
         }
     }
 
-    pub fn sort_by(self, cmp: SortBy) -> Self {
+    pub fn sort_by(self, cmp: &SortBy) -> Self {
         match cmp {
             SortBy::Ascending => self.sort_ascending(),
             SortBy::Descending => self.sort_descending(),

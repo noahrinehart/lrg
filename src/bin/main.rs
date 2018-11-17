@@ -19,7 +19,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     // Get current directory (1st param or current directory)
-    let current_dir = if args.len() == 0 || args.len() == 1 {
+    let current_dir = if args.is_empty() || args.len() == 1 {
         // If program path is only argument
         match env::current_dir() {
             Ok(path) => path.as_path().to_owned(),
