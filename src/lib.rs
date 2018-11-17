@@ -13,7 +13,6 @@ To find the largest files in a directory:
 ```
 use std::path::Path;
 use lrg::{Lrg, LrgOptions, DirEntry, SortBy};
-
 // Get a path to some directory (or file)
 let path = Path::new("./some/path");
 // Create the Lrg object to store the entries
@@ -31,7 +30,6 @@ To find the smallest files in a directory:
 ```
 # use std::path::Path;
 # use lrg::{Lrg, LrgOptions, DirEntry};
-
 let path = Path::new("./some/other/path");
 let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
 let entries: Vec<DirEntry> = lrg.sort_ascending().get_entries();
@@ -41,7 +39,6 @@ To search using a custom function:
 ```
 # use std::path::Path;
 # use lrg::{Lrg, LrgOptions, DirEntry};
-
 let path = Path::new("./another/path");
 let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
 // Sort by filename (note: not the full path)
@@ -78,10 +75,10 @@ pub enum SortBy {
 
 /// Options when constructing an `Lrg` struct.
 /// 
+/// # Examples
 /// Can be constructed like normal:
 /// ```
 /// # use lrg::LrgOptions;
-///
 /// let opts = LrgOptions {
 ///     min_depth: 1,
 ///     max_depth: 5,
@@ -89,11 +86,9 @@ pub enum SortBy {
 ///     include_dirs: true,
 /// };
 /// ```
-/// 
 /// Or can also inherit [`default options`]:
 /// ```
 /// # use lrg::LrgOptions;
-///
 /// let opts = LrgOptions {
 ///     min_depth: 5,
 ///     max_depth: 10,
@@ -121,10 +116,9 @@ pub struct LrgOptions {
 impl Default for LrgOptions {
     /// The default function.
     ///
-    /// For example:
+    /// # Examples
     /// ```
     /// use lrg::LrgOptions;
-    /// 
     /// // Gives options that recurse as far as possible, don't follow links,
     /// // and don't include directories.
     /// let options = LrgOptions::default();
@@ -159,29 +153,26 @@ pub struct Lrg {
 impl Lrg {
     /// Creates a new Lrg with options and at the given path.
     /// 
-    /// For example:
+    /// # Examples
     /// ```
     /// # use std::path::Path;
     /// # use lrg::{Lrg, LrgOptions};
-    /// 
     /// let path = Path::new(".");
     /// let lrg = Lrg::new(path, &LrgOptions::default());
     /// ```
-    /// 
     /// To use custom options, just supply a [`LrgOptions`] struct.
     ///
-    /// For example, to only search the base directoy, using the other default options:
+    /// To only search the base directoy, using the other default options:
     /// ```
     /// # use std::path::Path;
     /// # use lrg::LrgOptions;
-    /// 
     /// let path = Path::new(".");
     /// let opts = LrgOptions {
     ///     min_depth: 1,
     ///     ..LrgOptions::default()
     /// };
     /// ```
-    /// 
+    ///
     /// [`LrgOptions`]: struct.LrgOptions.html
     pub fn new(path: &Path, options: &LrgOptions) -> Self {
         let mut entries: Vec<DirEntry> = Vec::new();
@@ -216,11 +207,11 @@ impl Lrg {
 
     /// Sorts the lrg object entries, and returns the lrg object.
     ///
-    /// For example, to get the largest files first:
+    /// # Examples
+    /// To get the largest files first:
     /// ```
     /// # use std::path::Path;
     /// # use lrg::{Lrg, LrgOptions, SortBy};
-    /// 
     /// let path = Path::new(".");
     /// let mut lrg = Lrg::new(path, &LrgOptions::default());
     /// lrg.sort_by(SortBy::Descending);
@@ -234,12 +225,12 @@ impl Lrg {
 
     /// Sorts the lrg object entries by a custom sort function, and returns the lrg object.
     ///
-    /// For example, to search by creation date:
+    /// # Examples
+    /// To search by creation date:
     /// ```
     /// # use std::path::{Path, PathBuf};
     /// # use std::ffi::OsStr;
     /// # use lrg::{Lrg, LrgOptions, DirEntry};
-    ///
     /// let path = Path::new("./another/path");
     /// let mut lrg = Lrg::new(path, &LrgOptions::default());
     /// lrg.sort_by_custom(|a: &DirEntry, b: &DirEntry| {
@@ -271,11 +262,10 @@ impl Lrg {
 
     /// Sorts the lrg object entries by ascending file size, and returns the lrg object.
     /// 
-    /// For example:
+    /// # Examples
     /// ```
     /// # use std::path::Path;
     /// # use lrg::{Lrg, LrgOptions};
-    /// 
     /// let path = Path::new("./another/path");
     /// let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
     /// let entries = lrg.sort_ascending().get_entries();
@@ -289,11 +279,10 @@ impl Lrg {
 
     /// Sorts the lrg object entries by descending file size, and returns the lrg object.
     /// 
-    /// For example:
+    /// # Examples
     /// ```
     /// # use std::path::Path;
     /// # use lrg::{Lrg, LrgOptions};
-    /// 
     /// let path = Path::new("./another/path");
     /// let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
     /// let entries = lrg.sort_descending().get_entries();
@@ -317,6 +306,14 @@ impl Lrg {
 
     /// Gets the entries from the [`Lrg`] object.
     /// 
+    /// # Examples
+    /// ```
+    /// # use std::path::Path;
+    /// # use lrg::{Lrg, LrgOptions};
+    /// let path = Path::new("./another/path");
+    /// let mut lrg: Lrg = Lrg::new(path, &LrgOptions::default());
+    /// let entries = lrg.sort_ascending().get_entries();
+    /// ```
     /// [`Lrg`]: struct.Lrg.html
     pub fn get_entries(&self) -> Vec<DirEntry> {
         self.entries.clone()
