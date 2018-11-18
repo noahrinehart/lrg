@@ -1,23 +1,22 @@
+extern crate lrg;
 extern crate clap;
 extern crate humansize;
-extern crate lrg;
+extern crate pathdiff;
 
 use std::env;
-use std::path::PathBuf;
+use std::path::{PathBuf};
 use std::process;
 
-use lrg::{get_walkdir_error_str, Lrg, LrgOptions};
+use lrg::{get_walkdir_error_str, Lrg, LrgOptions, SortBy};
 
 use clap::{App, Arg};
 use humansize::{file_size_opts as options, FileSize};
+use pathdiff::diff_paths;
 
 // TODO build script completions
 // TODO customize format
 // TODO colored output
-// TODO relative path (arg for absoulte -a)
-// TODO filterentry, custom filter https://docs.rs/walkdir/2.2.7/walkdir/struct.FilterEntry.html
 // TODO handle errors function options for lib
-// TODO sort by ascending cmdline
 
 fn main() {
     // Init env_logger
@@ -52,6 +51,14 @@ fn main() {
             .short("i")
             .long("directories")
             .help("include directories in search (default: false)"))
+        .arg(Arg::with_name("ASCENDING")
+            .short("a")
+            .long("ascending")
+            .help("sort the results in ascending order (default: false)"))
+        .arg(Arg::with_name("ABSOLUTE")
+            .short("b")
+            .long("absolute")
+            .help("outputs files' absolute path (default: false)"))
         .arg(Arg::with_name("FILEPATH")
             .help("the path to search in")
             .index(1))
@@ -103,6 +110,17 @@ fn main() {
     // Whether to include directories or not
     let include_dirs = matches.is_present("DIRECTORIES");
 
+    // Whether to sort by ascending or not
+    let sort_value = if matches.is_present("ASCENDING") {
+        SortBy::Ascending
+    } else {
+        SortBy::Descending
+    };
+
+    // Whether to output absolute or relative values
+    let output_absolute = matches.is_present("ABSOLUTE");
+
+    // Set options for finding entries
     let options = LrgOptions {
         max_depth,
         follow_links,
@@ -112,9 +130,10 @@ fn main() {
 
     // Fetch entries
     let entries = Lrg::new(&current_dir, &options)
-        .sort_descending()
+        .sort_by(&sort_value)
         .get_entries();
 
+    // Check for no entries found
     if entries.is_empty() {
         println!("lrg: no files found");
         process::exit(1);
@@ -133,6 +152,14 @@ fn main() {
             break;
         }
 
+        // Get the path to display depending on flags
+        let display_path = if output_absolute {
+            format!("{}", entry.path().display())
+        } else {
+            format!("{}", diff_paths(entry.path(), &current_dir).unwrap_or_else(|| PathBuf::new()).display())
+
+        };
+
         // Handle error getting meetadata
         match entry.metadata() {
             Ok(meta) => {
@@ -140,14 +167,14 @@ fn main() {
                 println!(
                     "{}: {}",
                     meta.len().file_size(&hs_options).unwrap(),
-                    entry.path().display()
+                    display_path
                 );
             }
             Err(err) => {
                 let error_message = get_walkdir_error_str(&err);
                 println!(
                     "lrg: cannot get metadata of '{}': {}",
-                    entry.path().display(),
+                    display_path,
                     error_message
                 );
             }
