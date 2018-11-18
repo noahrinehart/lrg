@@ -20,6 +20,7 @@ cargo build --release
 ```
 
 ## Examples
+Check [https://docs.rs/lrg/](https://docs.rs/lrg/) for the full docs
 ### Using the binary
 
 To find the largest files in the current directory (by default, it searches the current directory, and only fetches the top 5):
@@ -39,7 +40,7 @@ To only search in the current directory and not recurse through others:
 
 #### Full Usage
 ```
-lrg 0.1
+lrg 0.2.0
 Noah Rinehart <rinehart.noah@gmail.com>
 A utility to help find the largest file(s) in a directory
 
@@ -47,6 +48,8 @@ USAGE:
     lrg [FLAGS] [OPTIONS] [FILEPATH]
 
 FLAGS:
+    -b, --absolute        outputs files' absolute path (default: false)
+    -a, --ascending       sort the results in ascending order (default: false)
     -i, --directories     include directories in search (default: false)
     -l, --follow-links    will follow links of files (default: false)
     -r, --no-recursion    will only visit files in specified directory, takes precedence over max-depth (default: false)
@@ -57,6 +60,8 @@ OPTIONS:
     -d, --max-depth <MAX_DEPTH>    sets the maximum depth of folders to search, unless --no-recursion specified
                                    (default: max possible)
     -n, --number <NUM_ENTRIES>     sets the number of files to list (default: 5)
+    -u, --units <UNITS>            sets the units to display: decimal for 1000KB, binary for 1024KiB, conventional for
+                                   1024KB (default: conventional)
 
 ARGS:
     <FILEPATH>    the path to search in
@@ -67,7 +72,7 @@ ARGS:
 First, add the crate to your project (check for which version you would like to use, or just put * to use the latest):
 ```sh
 # Cargo.toml
-lrg = "VERSION_NUM"
+lrg = "0.2.0"
 ```
 
 Then, add `extern create lrg` at the top of your project.

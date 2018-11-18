@@ -22,7 +22,7 @@ fn main() {
 
     // Get args
     let matches = App::new("lrg")
-        .version("0.1")
+        .version("0.2.0")
         .author("Noah Rinehart <rinehart.noah@gmail.com>")
         .about("A utility to help find the largest file(s) in a directory")
         .arg(Arg::with_name("NUMBER")

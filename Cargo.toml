@@ -1,6 +1,6 @@
 [package]
 name = "lrg"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Noah Rinehart <rinehart.noah@gmail.com>"]
 description = "A utility to help find the largest file(s) in a directory"
 documentation = "https://docs.rs/lrg/"
