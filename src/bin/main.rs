@@ -10,11 +10,9 @@ use std::process;
 use lrg::{get_walkdir_error_str, Lrg, LrgOptions, SortBy};
 
 use clap::{App, Arg};
-use humansize::{file_size_opts as options, FileSize};
+use humansize::{file_size_opts, FileSize};
 use pathdiff::diff_paths;
 
-// TODO build script completions
-// TODO customize format
 // TODO colored output
 // TODO handle errors function options for lib
 
@@ -59,6 +57,12 @@ fn main() {
             .short("b")
             .long("absolute")
             .help("outputs files' absolute path (default: false)"))
+        .arg(Arg::with_name("UNITS")
+            .short("u")
+            .long("units")
+            .value_name("UNITS")
+            .help("sets the units to display: decimal for 1000KB, binary for 1024KiB, conventional for 1024KB (default: conventional)")
+            .takes_value(true))
         .arg(Arg::with_name("FILEPATH")
             .help("the path to search in")
             .index(1))
@@ -120,6 +124,22 @@ fn main() {
     // Whether to output absolute or relative values
     let output_absolute = matches.is_present("ABSOLUTE");
 
+    // Parse units to use when printing
+    let units = match matches.value_of("UNITS") {
+        Some(unit) => {
+            match unit {
+                "decimal" => file_size_opts::DECIMAL,
+                "binary" => file_size_opts::BINARY,
+                "conventional" => file_size_opts::CONVENTIONAL,
+                _ => {
+                    println!("Error: couldn't parse units");
+                    process::exit(1);
+                },
+            }
+        },
+        None => file_size_opts::CONVENTIONAL,
+    };
+
     // Set options for finding entries
     let options = LrgOptions {
         max_depth,
@@ -140,9 +160,9 @@ fn main() {
     }
 
     // Options for printing humansize'd numbers
-    let hs_options = options::FileSizeOpts {
+    let hs_options = file_size_opts::FileSizeOpts {
         allow_negative: true,
-        ..options::CONVENTIONAL
+        ..units
     };
 
     // Iterate through entries
@@ -160,7 +180,7 @@ fn main() {
 
         };
 
-        // Handle error getting meetadata
+        // Handle error getting metadata
         match entry.metadata() {
             Ok(meta) => {
                 // Unwrap since guranteed to not panic due to options
