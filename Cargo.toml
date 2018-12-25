@@ -1,6 +1,6 @@
 [package]
 name = "lrg"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Noah Rinehart <rinehart.noah@gmail.com>"]
 description = "A utility to help find the largest file(s) in a directory"
 documentation = "https://docs.rs/lrg/"
@@ -10,6 +10,7 @@ readme = "README.md"
 keywords = ["lrg", "largest", "smallest", "file", "find"]
 categories = ["command-line-utilities", "filesystem"]
 license = "MIT"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "noahrinehart/lrg" }

@@ -53,9 +53,6 @@ let entries: Vec<DirEntry> = lrg.get_entries();
 [`walkdir::DirEntry`]: https://docs.rs/walkdir/2.2.7/walkdir/struct.DirEntry.html
 */
 
-extern crate log;
-extern crate walkdir;
-
 use std::cmp::Ordering;
 use std::io::ErrorKind;
 use std::path::Path;
@@ -95,7 +92,6 @@ pub enum SortBy {
 /// ```
 ///
 /// [`default options`]: struct.LrgOptions.html#method.default
-
 #[derive(Clone, Debug)]
 pub struct LrgOptions {
     /// Specifies them minimum depth for searching

@@ -40,7 +40,7 @@ To only search in the current directory and not recurse through others:
 
 #### Full Usage
 ```
-lrg 0.2.0
+lrg 0.3.0
 Noah Rinehart <rinehart.noah@gmail.com>
 A utility to help find the largest file(s) in a directory
 
@@ -72,7 +72,7 @@ ARGS:
 First, add the crate to your project (check for which version you would like to use, or just put * to use the latest):
 ```sh
 # Cargo.toml
-lrg = "0.2.0"
+lrg = "0.3.0"
 ```
 
 Then, add `extern create lrg` at the top of your project.
